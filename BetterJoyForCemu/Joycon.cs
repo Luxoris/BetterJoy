@@ -97,11 +97,13 @@ namespace BetterJoyForCemu {
 		private Int16[] acc_neutral = { 0, 0, 0 };
 		private Int16[] acc_sensiti = { 0, 0, 0 };
 		private Vector3 acc_g;
+		
 
 		private Int16[] gyr_r = { 0, 0, 0 };
 		private Int16[] gyr_neutral = { 0, 0, 0 };
 		private Int16[] gyr_sensiti = { 0, 0, 0 };
 		private Vector3 gyr_g;
+	
 
 		private short[] acc_sen = new short[3]{
 			16384,
@@ -226,6 +228,8 @@ namespace BetterJoyForCemu {
 		bool toRumble = Boolean.Parse(ConfigurationManager.AppSettings["EnableRumble"]);
 
 		bool showAsXInput = Boolean.Parse(ConfigurationManager.AppSettings["ShowAsXInput"]);
+		bool gyroOverSticks = Boolean.Parse(ConfigurationManager.AppSettings["GyroOverSticks"]);
+		bool accelOverSticks = Boolean.Parse(ConfigurationManager.AppSettings["AccelOverSticks"]);
 
 		public MainForm form;
 
@@ -693,17 +697,87 @@ namespace BetterJoyForCemu {
 			if (xin != null) {
 				if (!isSnes) {
 					if (other != null || isPro) { // no need for && other != this
-						report.SetAxis(Xbox360Axes.LeftThumbX, CastStickValue((other == this && !isLeft) ? stick2[0] : stick[0]));
-						report.SetAxis(Xbox360Axes.LeftThumbY, CastStickValue((other == this && !isLeft) ? stick2[1] : stick[1]));
-						report.SetAxis(Xbox360Axes.RightThumbX, CastStickValue((other == this && !isLeft) ? stick[0] : stick2[0]));
-						report.SetAxis(Xbox360Axes.RightThumbY, CastStickValue((other == this && !isLeft) ? stick[1] : stick2[1]));
+						if (accelOverSticks&&!gyroOverSticks)
+						{
+							if (other != this && !isLeft)
+							{
+								report.SetAxis(Xbox360Axes.RightThumbX, CastAccelValue(-acc_g.Y));
+								report.SetAxis(Xbox360Axes.RightThumbY, CastAccelValue(acc_g.Z));
+								report.SetAxis(Xbox360Axes.RightTrigger, CastAccelThumbValue(acc_g.X));
+								report.SetAxis(Xbox360Axes.LeftThumbX, CastAccelValue(-other.acc_g.Y));
+								report.SetAxis(Xbox360Axes.LeftThumbY, CastAccelValue(other.acc_g.Z));
+								report.SetAxis(Xbox360Axes.LeftTrigger, CastAccelThumbValue(other.acc_g.X));
+								
+							}
+
+							if (other != this && isLeft)
+							{
+								report.SetAxis(Xbox360Axes.RightThumbX, CastAccelValue(-other.acc_g.Y));
+								report.SetAxis(Xbox360Axes.RightThumbY, CastAccelValue(other.acc_g.Z));
+								report.SetAxis(Xbox360Axes.RightTrigger, CastAccelThumbValue(other.acc_g.X));
+								report.SetAxis(Xbox360Axes.LeftThumbX, CastAccelValue(-acc_g.Y));
+								report.SetAxis(Xbox360Axes.LeftThumbY, CastAccelValue(acc_g.Z));
+								report.SetAxis(Xbox360Axes.LeftTrigger, CastAccelThumbValue(acc_g.X));
+							}
+						}else
+						if (gyroOverSticks)
+                        {
+							if(other != this && !isLeft)
+                            {
+								report.SetAxis(Xbox360Axes.RightThumbX, CastGyroValue(gyr_g.Z));
+								report.SetAxis(Xbox360Axes.RightThumbY, CastGyroValue(gyr_g.Y));
+								report.SetAxis(Xbox360Axes.RightTrigger, CastGyroThumbValue(gyr_g.X));
+								report.SetAxis(Xbox360Axes.LeftThumbX, CastGyroValue(other.gyr_g.Z));
+								report.SetAxis(Xbox360Axes.LeftThumbY, CastGyroValue(other.gyr_g.Y));
+								report.SetAxis(Xbox360Axes.LeftTrigger, CastGyroThumbValue(-other.gyr_g.X));
+							}
+
+							if(other != this && isLeft)
+                            {
+								report.SetAxis(Xbox360Axes.RightThumbX, CastGyroValue(other.gyr_g.Z));
+								report.SetAxis(Xbox360Axes.RightThumbY, CastGyroValue(other.gyr_g.Y));
+								report.SetAxis(Xbox360Axes.RightTrigger, CastGyroThumbValue(other.gyr_g.X));
+								report.SetAxis(Xbox360Axes.LeftThumbX, CastGyroValue(gyr_g.Z));
+								report.SetAxis(Xbox360Axes.LeftThumbY, CastGyroValue(gyr_g.Y));
+								report.SetAxis(Xbox360Axes.LeftTrigger, CastGyroThumbValue(-gyr_g.X));
+							}
+						}
+                        else
+                        {
+							report.SetAxis(Xbox360Axes.LeftThumbX, CastStickValue((other == this && !isLeft) ? stick2[0] : stick[0]));
+							report.SetAxis(Xbox360Axes.LeftThumbY, CastStickValue((other == this && !isLeft) ? stick2[1] : stick[1]));
+							report.SetAxis(Xbox360Axes.RightThumbX, CastStickValue((other == this && !isLeft) ? stick[0] : stick2[0]));
+							report.SetAxis(Xbox360Axes.RightThumbY, CastStickValue((other == this && !isLeft) ? stick[1] : stick2[1]));
+						}
 					} else { // single joycon mode
-						report.SetAxis(Xbox360Axes.LeftThumbY, CastStickValue((isLeft ? 1 : -1) * stick[0]));
-						report.SetAxis(Xbox360Axes.LeftThumbX, CastStickValue((isLeft ? -1 : 1) * stick[1]));
+						if (gyroOverSticks|| accelOverSticks)
+                        {
+							if (accelOverSticks)
+							{
+								report.SetAxis(Xbox360Axes.RightThumbX, CastAccelValue(gyr_g.Z));
+								report.SetAxis(Xbox360Axes.RightThumbY, CastAccelValue(gyr_g.Y));
+								report.SetAxis(Xbox360Axes.RightTrigger, CastAccelThumbValue(gyr_g.X));
+							}
+							if (gyroOverSticks)
+							{
+								report.SetAxis(Xbox360Axes.LeftThumbX, CastAccelValue(-acc_g.Y));
+								report.SetAxis(Xbox360Axes.LeftThumbY, CastAccelValue(acc_g.Z));
+								report.SetAxis(Xbox360Axes.LeftTrigger, CastGyroThumbValue(-acc_g.X));
+							}
+
+						}
+                        else { 
+							report.SetAxis(Xbox360Axes.LeftThumbY, CastStickValue((isLeft ? 1 : -1) * stick[0]));
+							report.SetAxis(Xbox360Axes.LeftThumbX, CastStickValue((isLeft ? -1 : 1) * stick[1]));
+						}
 					}
 				}
-				report.SetAxis(Xbox360Axes.LeftTrigger, (short)(buttons[(int)(isLeft ? Button.SHOULDER_2 : Button.SHOULDER2_2)] ? Int16.MaxValue : 0));
-				report.SetAxis(Xbox360Axes.RightTrigger, (short)(buttons[(int)(isLeft ? Button.SHOULDER2_2 : Button.SHOULDER_2)] ? Int16.MaxValue : 0));
+				if (!gyroOverSticks&&!accelOverSticks)
+				{				
+					report.SetAxis(Xbox360Axes.LeftTrigger, (short)(buttons[(int)(isLeft ? Button.SHOULDER_2 : Button.SHOULDER2_2)] ? Int16.MaxValue : 0));
+					report.SetAxis(Xbox360Axes.RightTrigger, (short)(buttons[(int)(isLeft ? Button.SHOULDER2_2 : Button.SHOULDER_2)] ? Int16.MaxValue : 0));
+				}
+					
 			}
 
 			return 0;
@@ -823,6 +897,30 @@ namespace BetterJoyForCemu {
 
 		private short CastStickValue(float stick_value) {
 			return (short)Math.Max(Int16.MinValue, Math.Min(Int16.MaxValue, stick_value * (stick_value > 0 ? Int16.MaxValue : -Int16.MinValue)));
+		}
+
+		private short CastGyroValue(float stick_value)
+		{
+			return (short)Math.Max(Math.Min(stick_value * 100,Int16.MaxValue),Int16.MinValue) ;
+		}
+
+		private short CastGyroThumbValue(float stick_value)
+		{
+			stick_value = Math.Max(Math.Min(stick_value*10, 255), -255);
+			stick_value = 255 * 0.5f + (stick_value*0.5f);
+			return (short)stick_value;
+		}
+
+		private short CastAccelValue(float stick_value)
+		{
+			return (short)Math.Max(Math.Min(stick_value * 10000, Int16.MaxValue), Int16.MinValue);
+		}
+
+		private short CastAccelThumbValue(float stick_value)
+		{
+			stick_value = Math.Max(Math.Min(stick_value * 500, 255), -255);
+			stick_value = 255 * 0.5f + (stick_value * 0.5f);
+			return (short)stick_value;
 		}
 
 		public void SetRumble(float low_freq, float high_freq, float amp, int time = 0) {

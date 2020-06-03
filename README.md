@@ -1,3 +1,7 @@
+# BetterJoyForCemu - modified for a project on Unreal Engine 4.
+Allow to get the gyrometers and accelerometers values on sticks inputs for Xbox360 controller.
+--Modified by Luxoris for an Educational Project
+
 # BetterJoyForCemu v5 (v6 Nightly)
 Allows the Nintendo Switch Pro Controller and Joycons to be used with [Cemu](http://cemu.info/) using [Cemuhook](https://sshnuke.net/cemuhook/), [Citra](https://citra-emu.org/), and system-wide with generic XInput support.
 
